@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 #if WEBXR_INPUT_PROFILES
 using WebXRInputProfile;
@@ -35,6 +36,8 @@ namespace WebXR.Interactions
 
         private Vector3 currentVelocity;
         private Vector3 previousPos;
+
+        private bool snapInProgress = false;
 
 #if WEBXR_INPUT_PROFILES
     private InputProfileLoader inputProfileLoader;
@@ -109,6 +112,14 @@ namespace WebXR.Interactions
                 return;
             }
 
+
+            if (controller.GetAxis(WebXRController.AxisTypes.Trigger) > 0.80f && currentRigidBody.transform.name == "Blaster")
+            {
+
+                currentRigidBody.transform.GetComponent<BlasterShoot>().Shoot();
+            }
+
+
             // Get button A(0 or 1), or Axis Trigger/Grip (0 to 1), the larger between them all, by that order
             float normalizedTime = controller.GetButton(WebXRController.ButtonTypes.ButtonA) ? 1 :
                                     Mathf.Max(controller.GetAxis(WebXRController.AxisTypes.Trigger),
@@ -126,11 +137,7 @@ namespace WebXR.Interactions
                 Drop();
             }
 
-            if (controller.GetButtonUp(WebXRController.ButtonTypes.Trigger) && currentRigidBody.transform.name == "Blaster")
-            {
 
-                currentRigidBody.transform.GetComponent<BlasterShoot>().Shoot();
-            }
 
             currentVelocity = (transform.position - previousPos) / Time.deltaTime;
             previousPos = transform.position;
@@ -156,7 +163,7 @@ namespace WebXR.Interactions
                 return;
 
             contactRigidBodies.Add(other.gameObject.GetComponent<Rigidbody>());
-            controller.Pulse(0.5f, 250);
+            controller.Pulse(1f, 250);
         }
 
         private void OnTriggerExit(Collider other)
@@ -511,11 +518,11 @@ namespace WebXR.Interactions
         {
             currentRigidBody = GetNearestRigidBody();
 
-            if (!currentRigidBody)
+            if (!currentRigidBody || snapInProgress == true)
                 return;
 
-            currentRigidBody.MovePosition(transform.position);
-            attachJoint.connectedBody = currentRigidBody;
+            StartCoroutine(SmoothSnap(currentRigidBody));
+
         }
 
         public void Drop()
@@ -525,6 +532,56 @@ namespace WebXR.Interactions
             currentRigidBody.velocity = currentVelocity;
             attachJoint.connectedBody = null;
             currentRigidBody = null;
+        }
+
+        IEnumerator SmoothSnap(Rigidbody snapRigidbody)
+        {
+            float waitTime = 0.15f;
+            float elapsedTime = 0;
+            bool snapPointFound = false;
+            snapInProgress = true;
+
+            Vector3 startPosition = snapRigidbody.transform.position;
+
+
+            Transform snapPoint = snapRigidbody.transform.Find("SnapPoint");
+
+            if (snapPoint == null)
+            {
+                snapPoint = snapRigidbody.transform;
+                snapPointFound = false;
+            }
+            else
+            {
+                snapPointFound = true;
+            }
+
+
+            Vector3 absoluteMovement = transform.position - snapPoint.position;
+
+            while (elapsedTime <= waitTime)
+            {
+                snapRigidbody.transform.position = Vector3.Lerp(startPosition, snapRigidbody.transform.position + (transform.position - snapPoint.position), elapsedTime / waitTime);
+
+                if (snapPointFound == true)
+                {
+                    snapRigidbody.transform.rotation = Quaternion.Slerp(snapRigidbody.transform.rotation,
+                        Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y - 90,
+                        transform.rotation.eulerAngles.z), elapsedTime / waitTime);
+                }
+
+
+                elapsedTime += Time.deltaTime;
+
+                yield return null;
+            }
+
+            absoluteMovement = transform.position - snapPoint.position;
+            snapRigidbody.transform.position += absoluteMovement;
+
+            attachJoint.connectedBody = snapRigidbody;
+
+            snapInProgress = false;
         }
 
         private Rigidbody GetNearestRigidBody()
