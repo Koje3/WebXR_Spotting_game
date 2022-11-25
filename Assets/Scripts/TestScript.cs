@@ -61,7 +61,7 @@ public class TestScript : MonoBehaviour
         bool snapPointFound = false;
 
         Vector3 startPosition = snapRigidbody.transform.position;
-
+        Quaternion endRotation = Quaternion.Euler(new Vector3(0,0,0));
 
         Transform snapPoint = snapRigidbody.transform.Find("SnapPoint");
 
@@ -84,9 +84,24 @@ public class TestScript : MonoBehaviour
 
             if (snapPointFound == true)
             {
+
+                //Calculate needed rotation and then apply it with slerp
+                //First calculate what is the rotation between snapPoint and target (substraction)
+                //Then add that rotation to parentObjects rotation
+                //Apply
+
+                //The way which which way the objects are multiplied matters. If the rotating object is first in the
+                //multiplication then it rotates based on local axis. If the rotating object is second, it rotates based on
+                //world axis.
+
+                Quaternion rotationOffset = Quaternion.Inverse(snapPoint.transform.rotation) * transform.rotation;
+
+                endRotation = snapRigidbody.transform.rotation * rotationOffset;
+
                 snapRigidbody.transform.rotation = Quaternion.Slerp(snapRigidbody.transform.rotation,
-                    Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y - 90,
-                    transform.rotation.eulerAngles.z), elapsedTime / waitTime);
+                    endRotation, elapsedTime / waitTime);
+
+
             }
 
 
@@ -97,6 +112,7 @@ public class TestScript : MonoBehaviour
 
         absoluteMovement = transform.position - snapPoint.position;
         snapRigidbody.transform.position += absoluteMovement;
+        snapRigidbody.transform.rotation = endRotation;
 
         attachJoint.connectedBody = snapRigidbody;
 

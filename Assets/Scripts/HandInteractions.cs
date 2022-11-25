@@ -125,6 +125,7 @@ namespace WebXR.Interactions
                                     Mathf.Max(controller.GetAxis(WebXRController.AxisTypes.Trigger),
                                     controller.GetAxis(WebXRController.AxisTypes.Grip));
 
+
             if ( controller.GetButtonDown(WebXRController.ButtonTypes.Grip)
                 || controller.GetButtonDown(WebXRController.ButtonTypes.ButtonA))
             {
@@ -542,7 +543,7 @@ namespace WebXR.Interactions
             snapInProgress = true;
 
             Vector3 startPosition = snapRigidbody.transform.position;
-
+            Quaternion endRotation = Quaternion.Euler(new Vector3(0, 0, 0));
 
             Transform snapPoint = snapRigidbody.transform.Find("SnapPoint");
 
@@ -565,9 +566,14 @@ namespace WebXR.Interactions
 
                 if (snapPointFound == true)
                 {
+
+                    Quaternion rotationOffset = Quaternion.Inverse(snapPoint.transform.rotation) * transform.rotation;
+
+                    endRotation = snapRigidbody.transform.rotation * rotationOffset;
+
                     snapRigidbody.transform.rotation = Quaternion.Slerp(snapRigidbody.transform.rotation,
-                        Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y - 90,
-                        transform.rotation.eulerAngles.z), elapsedTime / waitTime);
+                        endRotation, elapsedTime / waitTime);
+
                 }
 
 
@@ -578,6 +584,7 @@ namespace WebXR.Interactions
 
             absoluteMovement = transform.position - snapPoint.position;
             snapRigidbody.transform.position += absoluteMovement;
+            snapRigidbody.transform.rotation = endRotation;
 
             attachJoint.connectedBody = snapRigidbody;
 
