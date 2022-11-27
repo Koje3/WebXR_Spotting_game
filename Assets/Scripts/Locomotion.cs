@@ -12,16 +12,21 @@ namespace WebXR.Interactions
 
         public float moveSpeed = 0.5f;
         public float rotationSpeed = 1;
+        private float snapRotationTimer;
 
         private CharacterController characterController;
-        private WebXRController controller;
+        private WebXRController rightController;
+        private WebXRController leftController;
 
         private WebXRState xrState = WebXRState.NORMAL;
 
         private void Awake()
         {
-            controller = gameObject.GetComponent<WebXRController>();
+            rightController = gameObject.transform.Find("handR").GetComponent<WebXRController>();
+            leftController = gameObject.transform.Find("handL").GetComponent<WebXRController>();
             characterController = locomotionParent.GetComponent<CharacterController>();
+
+
         }
 
         private void OnEnable()
@@ -38,7 +43,7 @@ namespace WebXR.Interactions
 
         void Start()
         {
-
+            snapRotationTimer = 0f;
         }
 
         private void OnXRChange(WebXRState state, int viewsCount, Rect leftRect, Rect rightRect)
@@ -50,34 +55,62 @@ namespace WebXR.Interactions
         void Update()
         {
             Vector3 movementInput = new Vector3(0,0,0);
-
+            Vector3 movementDirection = new Vector3(0, 0, 0);
 
             if (xrState == WebXRState.VR)
             {
                 Cursor.lockState = CursorLockMode.None;
 
-                Vector2 thumbstickValues = controller.GetAxis2D(WebXRController.Axis2DTypes.Thumbstick);
+                //SMOOTH LOCOMOTION
+                Vector2 thumbstickValues = rightController.GetAxis2D(WebXRController.Axis2DTypes.Thumbstick);
 
                 if (thumbstickValues.y > 0.05f || thumbstickValues.y < -0.05f)
                 {
                     Quaternion headYaw = Quaternion.Euler(0, vrCameraR.transform.eulerAngles.y, 0);
 
-                    movementInput = headYaw * new Vector3(0, 0, thumbstickValues.y);
-
-
-                    //locomotionParent.transform.Translate(new Vector3(0, 0, thumbstickValues.y * moveSpeed));
-
+                    movementDirection = headYaw * new Vector3(0, 0, thumbstickValues.y);
                 }
 
-                if (thumbstickValues.x > 0.05f || thumbstickValues.x < -0.05f)
+
+                //SMOOTH ROTATION
+                //if (thumbstickValues.x > 0.05f || thumbstickValues.x < -0.05f)
+                //{
+
+                //    locomotionParent.transform.Rotate(new Vector3(0, thumbstickValues.x * rotationSpeed, 0));
+                //}
+
+
+                //SNAP ROTATION
+                if (thumbstickValues.x > 0.85f)
+                {
+                    
+                    if (snapRotationTimer <= 0)
+                    {
+                        snapRotationTimer = 0.5f;
+
+                        locomotionParent.transform.Rotate(new Vector3(0, 35f, 0));
+                    }
+                }
+
+                if (thumbstickValues.x < -0.85f)
                 {
 
-                    locomotionParent.transform.Rotate(new Vector3(0, thumbstickValues.x * rotationSpeed, 0));
+                    if (snapRotationTimer <= 0)
+                    {
+                        snapRotationTimer = 0.5f;
+
+                        locomotionParent.transform.Rotate(new Vector3(0, -35f, 0));
+                    }
+                }
+
+                if (snapRotationTimer > 0)
+                {
+                    snapRotationTimer -= Time.deltaTime;
                 }
 
 
-                Vector2 touchpadValues = controller.GetAxis2D(WebXRController.Axis2DTypes.Touchpad);
-
+                //TOUCHPAD ROTATION
+                Vector2 touchpadValues = rightController.GetAxis2D(WebXRController.Axis2DTypes.Touchpad);
 
                 if (touchpadValues.x > 0.05f || touchpadValues.x < -0.05f)
                 {
@@ -90,7 +123,7 @@ namespace WebXR.Interactions
 
             if (xrState == WebXRState.NORMAL)
             {
-                Cursor.lockState = CursorLockMode.Locked;
+                //Cursor.lockState = CursorLockMode.Locked;
 
                 //WASD inputs
                 float horizontalInput = Input.GetAxis("Horizontal");
@@ -112,10 +145,12 @@ namespace WebXR.Interactions
 
                     // Debug.Log("X" + Input.GetAxis("Mouse X") + "Y" + Input.GetAxis("Mouse Y"));
                 }
+
+                movementDirection = locomotionParent.transform.TransformDirection(movementInput);
             }
 
-
-            Vector3 movementDirection = locomotionParent.transform.TransformDirection(movementInput);
+            //APPLY MOVEMENT
+ 
 
             characterController.SimpleMove(movementDirection * moveSpeed);
 

@@ -819,7 +819,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1762254197161354916}
   - component: {fileID: 9118464168570844919}
-  - component: {fileID: 884625483072901660}
   - component: {fileID: 804113433307670130}
   m_Layer: 0
   m_Name: Scope_camera (1)
@@ -885,14 +884,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &884625483072901660
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 587906794519506356}
-  m_Enabled: 1
 --- !u!114 &804113433307670130
 MonoBehaviour:
   m_ObjectHideFlags: 0

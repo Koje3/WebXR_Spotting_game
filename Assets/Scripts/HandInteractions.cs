@@ -567,6 +567,15 @@ namespace WebXR.Interactions
                 if (snapPointFound == true)
                 {
 
+                    //Calculate needed rotation and then apply it with slerp
+                    //First calculate what is the rotation between snapPoint and target (substraction)
+                    //Then add that rotation to parentObjects rotation
+                    //Apply
+
+                    //The way which which way the objects are multiplied matters. If the rotating object is first in the
+                    //multiplication then it rotates based on local axis. If the rotating object is second, it rotates based on
+                    //world axis.
+
                     Quaternion rotationOffset = Quaternion.Inverse(snapPoint.transform.rotation) * transform.rotation;
 
                     endRotation = snapRigidbody.transform.rotation * rotationOffset;
