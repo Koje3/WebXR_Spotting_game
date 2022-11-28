@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class BlasterShoot : MonoBehaviour
 {
+    public GameMechanic gameMechanic;
     public Transform raycastOrigin;
-    public Transform TransferPoint;
+    public Transform transferPoint;
     public float laserShowTime = 1;
     [Space(4)]
     public AudioSource centerPlatformAudiosource;
@@ -184,10 +185,12 @@ public class BlasterShoot : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
+        transferObject.isStatic = false;
+        StartCoroutine(gameMechanic.ObjectTeleportedToCenter(transferObject, transferObject.transform.position, transferObject.transform.rotation));
         transferObject.transform.gameObject.AddComponent<Rigidbody>();
-        transferObject.transform.position = TransferPoint.position;
+        transferObject.transform.position = transferPoint.position;
 
-        GameObject transferParticleEffect = Instantiate(transferEffect, TransferPoint.position, Quaternion.identity);
+        GameObject transferParticleEffect = Instantiate(transferEffect, transferPoint.position, Quaternion.identity);
         Destroy(transferParticleEffect, 2f);
 
         if (transferObject.transform.gameObject.GetComponent<Outline>() != null)

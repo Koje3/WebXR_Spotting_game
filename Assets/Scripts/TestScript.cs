@@ -30,7 +30,7 @@ public class TestScript : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag != "Interactable")
+        if (other.gameObject.tag != "Interactable" && other.gameObject.tag != "SecondGrabPoint")
             return;
 
         currentRigidBody = other.gameObject.GetComponent<Rigidbody>();
@@ -49,6 +49,14 @@ public class TestScript : MonoBehaviour
 
         if (!currentRigidBody)
             return;
+
+        if (currentRigidBody.tag == "SecondGrabPoint")
+        {
+            transform.position = currentRigidBody.position;
+            currentRigidBody.GetComponent<FixedJoint>().connectedBody = transform.GetComponent<Rigidbody>();
+            transform.GetComponent<Rigidbody>().isKinematic = false;
+            return;
+        }
 
         StartCoroutine(SmoothSnap(currentRigidBody));
 
@@ -87,20 +95,17 @@ public class TestScript : MonoBehaviour
 
                 //Calculate needed rotation and then apply it with slerp
                 //First calculate what is the rotation between snapPoint and target (substraction)
-                //Then add that rotation to parentObjects rotation
-                //Apply
+                //Apply the rotation to the parent object
 
                 //The way which which way the objects are multiplied matters. If the rotating object is first in the
                 //multiplication then it rotates based on local axis. If the rotating object is second, it rotates based on
                 //world axis.
 
-                Quaternion rotationOffset = Quaternion.Inverse(snapPoint.transform.rotation) * transform.rotation;
 
-                endRotation = snapRigidbody.transform.rotation * rotationOffset;
+                endRotation = transform.rotation * Quaternion.Inverse(snapPoint.transform.localRotation);
 
                 snapRigidbody.transform.rotation = Quaternion.Slerp(snapRigidbody.transform.rotation,
                     endRotation, elapsedTime / waitTime);
-
 
             }
 
