@@ -7,6 +7,7 @@ public class BlasterSpawn : MonoBehaviour
     public GameObject blaster;
     public GameObject blasterSpawnPoint;
     public AudioClip transferSound;
+    public GameObject particleEffect;
     public float blasterSpawnTimeSeconds = 5f;
     public float blasterSpawnTimer;
 
@@ -23,9 +24,9 @@ public class BlasterSpawn : MonoBehaviour
     {
         if (blasterSpawnTimer <= 0)
         {
-            blaster.transform.position = blasterSpawnPoint.transform.position;
-            audioSource.PlayOneShot(transferSound);
             blasterSpawnTimer = blasterSpawnTimeSeconds;
+
+            StartCoroutine(SpawnBlaster());
         }
 
 
@@ -43,6 +44,21 @@ public class BlasterSpawn : MonoBehaviour
             blasterSpawnTimer = blasterSpawnTimeSeconds;
         }
 
+    }
+
+    public IEnumerator SpawnBlaster()
+    {
+        audioSource.PlayOneShot(transferSound);
+
+        yield return new WaitForSeconds(0.4f);
+
+        GameObject transferParticleEffect = Instantiate(particleEffect, blaster.transform.position, Quaternion.identity);
+        Destroy(transferParticleEffect, 2f);
+
+        blaster.transform.position = blasterSpawnPoint.transform.position;
+
+        GameObject transferParticleEffect2 = Instantiate(particleEffect, blaster.transform.position, Quaternion.identity);
+        Destroy(transferParticleEffect2, 2f);
     }
 
 }
