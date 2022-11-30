@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BlasterShoot : MonoBehaviour
 {
-    public GameMechanic gameMechanic;
+    public WebXR.Interactions.GameMechanic gameMechanic;
     public Transform raycastOrigin;
     public Transform transferPoint;
     public float laserShowTime = 1;
