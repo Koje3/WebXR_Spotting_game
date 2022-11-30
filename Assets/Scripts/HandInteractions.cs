@@ -117,6 +117,7 @@ namespace WebXR.Interactions
             {
 
                 currentRigidBody.transform.GetComponent<BlasterShoot>().Shoot();
+                controller.Pulse(1f, 150);
             }
 
 
@@ -164,7 +165,7 @@ namespace WebXR.Interactions
                 return;
 
             contactRigidBodies.Add(other.gameObject.GetComponent<Rigidbody>());
-            controller.Pulse(1f, 250);
+           // controller.Pulse(1f, 250);
         }
 
         private void OnTriggerExit(Collider other)
@@ -523,7 +524,7 @@ namespace WebXR.Interactions
                 return;
 
             StartCoroutine(SmoothSnap(currentRigidBody));
-
+            controller.Pulse(0.5f, 200);
         }
 
         public void Drop()
@@ -590,6 +591,12 @@ namespace WebXR.Interactions
             }
 
             absoluteMovement = transform.position - snapPoint.position;
+
+            if (controller.hand == WebXRControllerHand.LEFT)
+            {
+                absoluteMovement = absoluteMovement + new Vector3(0, 0, 0.04f);
+            }
+
             snapRigidbody.transform.position += absoluteMovement;
             snapRigidbody.transform.rotation = endRotation;
 

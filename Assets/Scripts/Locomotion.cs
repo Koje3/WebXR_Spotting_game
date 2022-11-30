@@ -95,13 +95,22 @@ namespace WebXR.Interactions
 
 
                 //SMOOTH LOCOMOTION
-                Vector2 thumbstickValues = rightController.GetAxis2D(WebXRController.Axis2DTypes.Thumbstick);
+                Vector2 thumbstickValuesRight = rightController.GetAxis2D(WebXRController.Axis2DTypes.Thumbstick);
 
-                if (thumbstickValues.y > 0.05f || thumbstickValues.y < -0.05f)
+                if (thumbstickValuesRight.y > 0.05f || thumbstickValuesRight.y < -0.05f)
                 {
                     Quaternion headYaw = Quaternion.Euler(0, vrCameraR.transform.eulerAngles.y, 0);
 
-                    movementDirection = headYaw * new Vector3(0, 0, thumbstickValues.y);
+                    movementDirection = headYaw * new Vector3(0, 0, thumbstickValuesRight.y);
+                }
+
+                Vector2 thumbstickValuesLeft = rightController.GetAxis2D(WebXRController.Axis2DTypes.Thumbstick);
+
+                if (thumbstickValuesLeft.y > 0.05f || thumbstickValuesLeft.y < -0.05f)
+                {
+                    Quaternion headYaw = Quaternion.Euler(0, vrCameraR.transform.eulerAngles.y, 0);
+
+                    movementDirection = headYaw * new Vector3(0, 0, thumbstickValuesLeft.y);
                 }
 
 
@@ -114,7 +123,7 @@ namespace WebXR.Interactions
 
 
                 //SNAP ROTATION
-                if (thumbstickValues.x > 0.85f)
+                if (thumbstickValuesRight.x > 0.85f)
                 {
                     
                     if (snapRotationTimer <= 0)
@@ -125,7 +134,7 @@ namespace WebXR.Interactions
                     }
                 }
 
-                if (thumbstickValues.x < -0.85f)
+                if (thumbstickValuesRight.x < -0.85f)
                 {
 
                     if (snapRotationTimer <= 0)
