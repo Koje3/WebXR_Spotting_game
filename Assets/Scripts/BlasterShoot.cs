@@ -47,10 +47,6 @@ public class BlasterShoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown("n"))
-        {
-            Shoot();
-        }
 
         RaycastHit hit;
 
@@ -161,7 +157,7 @@ public class BlasterShoot : MonoBehaviour
                 laserLine.SetPosition(1, raycastOrigin.TransformDirection(Vector3.forward) * 1000);
 
                 currentHitPoint = raycastOrigin.TransformDirection(Vector3.forward) * 1000;
-                currentHitDistance = 1000;
+                currentHitDistance = 200;
             }
         }
         else

@@ -55,11 +55,24 @@ namespace WebXR.Interactions
             takeTrigger = GetComponent<SphereCollider>();
             blasterOutline = blaster.GetComponent<Outline>();
             blasterParented = false;
+
+            Physics.IgnoreLayerCollision(8, 9, false);
         }
 
         private void OnXRChange(WebXRState state, int viewsCount, Rect leftRect, Rect rightRect)
         {
             xrState = state;
+
+            if (xrState == WebXRState.VR)
+            {
+                Physics.IgnoreLayerCollision(8, 9, true);
+            }
+
+            if (xrState == WebXRState.NORMAL)
+            {
+                Physics.IgnoreLayerCollision(8, 9, false);
+            }
+
         }
 
         // Update is called once per frame
@@ -71,6 +84,7 @@ namespace WebXR.Interactions
             if (xrState == WebXRState.VR)
             {
                 Cursor.lockState = CursorLockMode.None;
+
 
                 if (takeTrigger.enabled)
                 {
